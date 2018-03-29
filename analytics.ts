@@ -18,6 +18,7 @@ export class AnalyticsComponent {
     map: google.maps.Map;
     heatmap: google.maps.visualization.HeatmapLayer;
     LangLatArr: any;
+    MapPoints: any;
 
     //-------- VARIABLES -------
     eokoData:any;
@@ -88,7 +89,7 @@ export class AnalyticsComponent {
   //----------------- CREATE A MAP --------------
     ngOnInit() {
       var mapProp = {
-        center: new google.maps.LatLng(37.78, -122.44),
+        center: new google.maps.LatLng(-75.18994409999999, 39.95661269999999),
         zoom: 15,
         mapTypeId: google.maps.MapTypeId.ROADMAP
       };
@@ -98,7 +99,7 @@ export class AnalyticsComponent {
       //--------------- CREATING A HEAT MAP LAYER ---------------
       this.heatmap = new google.maps.visualization.HeatmapLayer({
           data: this.getPoints(),
-           map: this.map
+          map: this.map
       });
     }
 
@@ -111,21 +112,37 @@ export class AnalyticsComponent {
 
     //------------- FUNCTION TO GET LANGTITUDE AND LONGTITUDE FOR HEATMAP --------
     getPoints(){
-
+        console.log("WHERE THE FUCKS ARE THE COORDINATES!!!!!!!");
         this.LangLatArr = [];
-        console.log("WITHIN GET POINTS FUNCTION");
+        this.MapPoints = [];
         var actionList = this.generateActionList();
-
-
-        // this.actionList.map(action => action.coordinate);
-        if (actionList)
+        if (actionList){
             this.LangLatArr = actionList.map(action => action.coordinate);
-        else{
-            console.log("NO COORDINATE FOUNDS");
-        }
-        console.log("THIS IS THE LAT LANG COORDINATE!!!!!!!!!!", this.LangLatArr);
-        return []; 
 
+
+            //-------- GET EACH COORDINATE SEPARATELY -----------
+            for (let i = 0; i < this.LangLatArr.length; i++){
+                var coordinates = this.LangLatArr[i];
+                if (coordinates != ""){
+                    var langtitude = parseFloat(coordinates.split(","));
+                    var longtitude = parseFloat(coordinates.split(","));
+                    var point = new google.maps.LatLng(langtitude, longtitude);
+                    console.log(langtitude, longtitude);
+                    console.log(point);
+                    this.MapPoints.push(point);
+                }
+            }
+
+            console.log(this.MapPoints);
+            return this.MapPoints;
+        }
+
+
+        //------------ THERE ARE NO ACTIONS, SO NO HEATMAP ---------
+        else{
+            alert("NO COORDINATE FOUNDS");
+            return [];
+        }
     }
 
 
