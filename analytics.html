@@ -1,0 +1,31 @@
+
+<!-- _____________ HEATMAP ____________ -->
+<div #gmap style="height:400px; width: 800px"></div>
+<button ion-button (click)="toggleHeatMap()"> Toggle Heatmap </button>
+
+<div id="A">
+    <!-- <h1> WHERE THE FUCK IS THIS</h1> -->
+    <canvas baseChart width="400" height="400"
+        [datasets]="lineChartData"
+        [labels]="lineChartLabels"
+        [options]="lineChartOptions"
+        [colors]="lineChartColors"
+        [legend]="lineChartLegend"
+        [chartType]="lineChartType">
+    </canvas>
+</div>
+<hr />
+
+
+<div id="B">
+    <h3> Most Used </h3>
+    <h4> Titles </h4>
+    <h4> Tags </h4>
+    <div *ngFor="let tag of PrettifyTags">
+        {{tag.name}}: {{tag.count}}
+    </div>
+    <h4> Subtags </h4>
+    <div *ngFor="let subtag of PrettifySubTags">
+        {{subtag.name}}: {{subtag.count}}
+    </div>
+</div>
