@@ -5,7 +5,7 @@
 
 <div id="A">
     <!-- <h1> WHERE THE FUCK IS THIS</h1> -->
-    <canvas baseChart width="400" height="400"
+    <canvas baseChart width="800" height="400"
         [datasets]="lineChartData"
         [labels]="lineChartLabels"
         [options]="lineChartOptions"
@@ -16,10 +16,15 @@
 </div>
 <hr />
 
-
 <div id="B">
     <h3> Most Used </h3>
     <h4> Titles </h4>
+    <div *ngFor="let tagObj of TagsAndTitleFrequency">
+        <b>{{tagObj.tagname}}</b>
+        <div *ngFor="let word of tagObj.wordArr">
+            {{word.wordname}}: {{word.count}}
+        </div>
+    </div>
     <h4> Tags </h4>
     <div *ngFor="let tag of PrettifyTags">
         {{tag.name}}: {{tag.count}}
