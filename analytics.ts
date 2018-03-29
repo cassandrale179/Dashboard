@@ -33,21 +33,32 @@ export class AnalyticsComponent {
     ActionPerSubTag: any;
     PrettifyTags: any;
     PrettifySubTags: any;
+    TagsAndTitleFrequency: any;
+
+
+    //----------- CHART BACKEND -----------
+    SortedActionTime: any;
+    PeopleJoin: any;
+    ActionCreated: any;
+    TimeAxis: any;
 
 
 
     //------------------------ CHART VARIABLES --------------------------
-    public lineChartData:Array<any> = [
-       {data: [65, 59, 80, 81, 56, 55, 40], label: 'Number of Actions Created'},
-       {data: [28, 48, 40, 19, 86, 27, 90], label: 'Number of People Joined'}
-    ];
-    public lineChartLabels:Array<any> = ['Day 0', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'];
+    public lineChartData:Array<any> = [];
+
+    //--------- CHART LABEL ------------
+    public lineChartLabels:Array<any> = [];
+
+    //-------- CHART OPTIONS ----------
     public lineChartOptions:any = {
         responsive: true
     };
 
+
+    //------------ CHART COLOR -----------
     public lineChartColors:Array<any> = [
-    { // grey
+    {
       backgroundColor: 'rgba(148,159,177,0.2)',
       borderColor: 'rgba(148,159,177,1)',
       pointBackgroundColor: 'rgba(148,159,177,1)',
@@ -55,7 +66,7 @@ export class AnalyticsComponent {
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: 'rgba(148,159,177,0.8)'
     },
-    { // dark grey
+    {
       backgroundColor: 'rgba(220, 118, 51,0.2)',
       borderColor: 'rgba(77,83,96,1)',
       pointBackgroundColor: 'rgba(77,83,96,1)',
@@ -64,6 +75,8 @@ export class AnalyticsComponent {
       pointHoverBorderColor: 'rgba(77,83,96,1)'
     }
   ];
+
+  //--------- CHART LEGEND AND TYPE -------
   public lineChartLegend:boolean = true;
   public lineChartType:string = 'line';
 
@@ -92,6 +105,7 @@ export class AnalyticsComponent {
         console.log('getting êoko data...')
         this.generateActionList();
         this.getTags();
+        this.SortActionByTimeStamp();
       }
     }
 
@@ -131,7 +145,7 @@ export class AnalyticsComponent {
 
 
     //---------------------------------------------------------------------------------------
-    //------------------------------------------- GET TAGS ----------------------------------
+    //--------------------------------------- GET TAGS --------------------------------------
     //---------------------------------------------------------------------------------------
     getTags(){
         this.ActionPerTag = {};
@@ -209,23 +223,133 @@ export class AnalyticsComponent {
     }
 
 
-
     //------------------ GET TITLE -------------------
     getTitle(){
-        console.log(this.ActionPerTag);
-        for (var tag in this.ActionPerTag){
+        this.TagsAndTitleFrequency = [];
+
+        for (var tag in this.ActionPerTag)
+        {
+            var ListOfWordsPerTag = [];
+            var WordCount = {};
             var ActionArray = this.ActionPerTag[tag];
+
+            //--------- LOOP THROUGH THE LIST OF ACTIONS --------
             for (let a = 0; a < ActionArray.length; a++){
                 var action = ActionArray[a];
-                var title = action.name;
+
+                //--------- SOME REGEX SHIT ---------
+                var title = action.name.replace(/[{()}/?!]/g, '');
+                title = title.toLowerCase();
+
+                //------- SPLIT EVERYTHING INTO WORDS -------
+                var ArrayOfWords = title.split(" ");
+                ListOfWordsPerTag = ListOfWordsPerTag.concat(ArrayOfWords);
             }
+
+
+            //--------- COUNT OCCURRENCE OF WORDS ---------
+            var SortedWordCount = [];
+            for (var i = 0; i < ListOfWordsPerTag.length; i++) {
+                      var word = ListOfWordsPerTag[i];
+                      if (word != "" && word != "a" && word != "the"){
+                           WordCount[word] = WordCount[word] ? WordCount[word] + 1 : 1;
+                      }
+                  }
+
+            for (var WordObject in WordCount) {
+                    var wordcount = {
+                        wordname: WordObject,
+                        count: WordCount[WordObject]
+                    }
+                    SortedWordCount.push(wordcount);
+            }
+            SortedWordCount.sort(function(a, b) {
+                return b.count - a.count;
+            });
+
+
+            //------------ ADD TAG AND ASSOCIATED WORD TO THE ARRAY -------
+            var TagsAndTitleFrequencyObj = {
+                tagname: tag,
+                wordArr: SortedWordCount
+            }
+            this.TagsAndTitleFrequency.push(TagsAndTitleFrequencyObj);
         }
+        console.log(this.TagsAndTitleFrequency);
     }
 
 
 
+    //--------------------------------------------------------------------------------------
+    //----------------------------- BACKEND FOR CHARTS -------------------------------------
+    //--------------------------------------------------------------------------------------
+    SortActionByTimeStamp(){
+        this.SortedActionTime = [];
+        for (var action in this.actionList){
+            this.SortedActionTime.push(this.actionList[action]);
+        }
+        this.SortedActionTime = this.actionList.sort(function (a, b) {
+              return b.actionCreatedTime - a.actionCreatedTime;
+        });
+        var endOfTime = this.SortedActionTime[0].actionCreatedTime;
+        var beginOfTime = this.SortedActionTime[this.SortedActionTime.length-1].actionCreatedTime;
+        this.WeeklyTimeStamp(beginOfTime, endOfTime);
+    }
+
+
+    //------------ CALCULATE ACTIONS AND JOINS PER WEEK --------
+    WeeklyTimeStamp(beginOfTime, endOfTime){
+        var oneweek = 86400000*7;
+        var interval = beginOfTime;
+        var weekArray = [];
+        console.log(interval, endOfTime);
+        while (interval < endOfTime){
+            interval += oneweek;
+            var timeobj = {
+                time: interval,
+                count: 0,
+                peopleJoin: 0
+            }
+            weekArray.push(timeobj);
+        }
+        console.log(weekArray);
+
+        for (var key in this.actionList){
+            var action = this.actionList[key];
+            var actionTime = action.actionCreatedTime;
+            for (let t = 0; t < weekArray.length; t++){
+                if (actionTime < weekArray[t].time){
+                    weekArray[t].count += 1;
+                    weekArray[t].peopleJoin += Object.keys(action.joined).length;
+                    break;
+                }
+            }
+
+        }
+
+        this.TimeAxis = [];
+        this.PeopleJoin = [];
+        this.ActionCreated = [];
+
+        //---------------- PRETTIFY WEEKLY ------------------
+        for (var eachpoint in weekArray){
+            var prettyTime = String(new Date(weekArray[eachpoint].time*1000)).substring(4,10);
+            this.TimeAxis.push(prettyTime);
+            this.PeopleJoin.push(weekArray[eachpoint].peopleJoin);
+            this.ActionCreated.push(weekArray[eachpoint].count);
+        }
+        this.lineChartLabels = this.TimeAxis;
+        this.lineChartData.push({data: this.ActionCreated, label: 'Number of Actions Created'});
+        this.lineChartData.push({data:this.PeopleJoin, label: 'Number of People Joined'});
+
+
+
+
+    }
+
+
   //--------------------------------------------------------------------------------------
-  //----------------------------------- CREATE A MAP --------------------------------------
+  //----------------------------------- CREATE A MAP -------------------------------------
   //--------------------------------------------------------------------------------------
     ngOnInit() {
       var mapProp = {
@@ -255,7 +379,8 @@ export class AnalyticsComponent {
     //------------- FUNCTION TO GET LANGTITUDE AND LONGTITUDE FOR HEATMAP --------
 
     //https://developers.google.com/maps/documentation/javascript/heatmaplayer
-    //Weighted Data Points to the heatmap data, where Action is the long and lat, and number joined is the weight
+    //Weighted Data Points to the heatmap data, where Action is the long and lat,
+    //and number joined is the weight
     getPoints(){
         this.LangLatArr = [];
         this.MapPoints = [];
@@ -296,8 +421,6 @@ export class AnalyticsComponent {
         }
     }
 
-
-
     //---------------------------------------------------------------------------------------
     //------------ WHEN YOU CLICK ON AN ACTION, IT SHOWS THE ACTION INFROMATION -------------
     //---------------------------------------------------------------------------------------
@@ -325,7 +448,6 @@ export class AnalyticsComponent {
     			fin.push(action.joined[i]);
     		}
     		this.cardData['joined'] = fin;
-
     		console.log("______cardData_____",this.cardData.joined,action.joined);
     	}
     }
