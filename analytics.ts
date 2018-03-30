@@ -291,20 +291,40 @@ export class AnalyticsComponent {
         this.SortedActionTime = this.actionList.sort(function (a, b) {
               return b.actionCreatedTime - a.actionCreatedTime;
         });
-        var endOfTime = this.SortedActionTime[0].actionCreatedTime;
-        var beginOfTime = this.SortedActionTime[this.SortedActionTime.length-1].actionCreatedTime;
-        this.WeeklyTimeStamp(beginOfTime, endOfTime);
+
+        this.TimeStampCalculator('week');
     }
 
 
     //------------ CALCULATE ACTIONS AND JOINS PER WEEK --------
-    WeeklyTimeStamp(beginOfTime, endOfTime){
-        var oneweek = 86400000*7;
+    TimeStampCalculator(choice){
+        // this.lineChartData = [];
+
+        //---------------- GET USER CHOICE ------------------
+        var conversion = 0;
+        if (choice == 'week') {
+            conversion = 86400000 * 7;
+        }
+        else if (choice == 'month') {
+            conversion = 86400000 * 30;
+            // this.lineChartData = [];
+        }
+        else if (choice == 'year') {
+            conversion = 86400000 * 365;
+            // this.lineChartData = [];
+        }
+
+
+        //---------------- BEGIN OF TIME AND END OF TIME ---------------
+        var endOfTime = this.SortedActionTime[0].actionCreatedTime;
+        var beginOfTime = this.SortedActionTime[this.SortedActionTime.length-1].actionCreatedTime;
         var interval = beginOfTime;
         var weekArray = [];
-        console.log(interval, endOfTime);
+
+
+        //-------- CREATE AN ARRAY OF TIME INTERVAL ----------
         while (interval < endOfTime){
-            interval += oneweek;
+            interval += conversion;
             var timeobj = {
                 time: interval,
                 count: 0,
@@ -341,9 +361,6 @@ export class AnalyticsComponent {
         this.lineChartLabels = this.TimeAxis;
         this.lineChartData.push({data: this.ActionCreated, label: 'Number of Actions Created'});
         this.lineChartData.push({data:this.PeopleJoin, label: 'Number of People Joined'});
-
-
-
 
     }
 
