@@ -4,6 +4,7 @@ import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFireDatabase } from 'angularfire2/database';
 import { UserInfoProvider } from '../../providers/user-info/user-info';
 import {} from '@types/googlemaps';
+import * as moment from 'moment';
 
 @Component({
   selector: 'analytics',
@@ -292,78 +293,72 @@ export class AnalyticsComponent {
               return b.actionCreatedTime - a.actionCreatedTime;
         });
 
-        this.TimeStampCalculator('week');
+        this.TimeStampCalculator('life');
     }
 
 
-    //------------ CALCULATE ACTIONS AND JOINS PER WEEK --------
+
+    //----------- WEEKLY CALCULATOR --------
     TimeStampCalculator(choice){
-        // this.lineChartData = [];
-
-        //---------------- GET USER CHOICE ------------------
-        var conversion = 0;
-        if (choice == 'week') {
-            conversion = 86400000 * 7;
-        }
-        else if (choice == 'month') {
-            conversion = 86400000 * 30;
-            // this.lineChartData = [];
-        }
-        else if (choice == 'year') {
-            conversion = 86400000 * 365;
-            // this.lineChartData = [];
-        }
-
+        this.lineChartData = [];
+        this.lineChartLabels.length = 0;
 
         //---------------- BEGIN OF TIME AND END OF TIME ---------------
-        var endOfTime = this.SortedActionTime[0].actionCreatedTime;
-        var beginOfTime = this.SortedActionTime[this.SortedActionTime.length-1].actionCreatedTime;
-        var interval = beginOfTime;
-        var weekArray = [];
+        let endOfTime = moment(this.SortedActionTime[0].actionCreatedTime);
+        let beginOfTime = moment(this.SortedActionTime[this.SortedActionTime.length-1].actionCreatedTime);
+        let interval = beginOfTime;
+        let timeArray = [];
 
 
-        //-------- CREATE AN ARRAY OF TIME INTERVAL ----------
+        //----------------- CREATE X-AXIS IN WHICH EACH POINT IS A DAY  ------------
         while (interval < endOfTime){
-            interval += conversion;
+            interval = beginOfTime.add(1, 'days');
             var timeobj = {
-                time: interval,
+                time: interval.format('L'),
+                prettify: interval.format('L'),
                 count: 0,
                 peopleJoin: 0
             }
-            weekArray.push(timeobj);
+            timeArray.push(timeobj);
         }
-        console.log(weekArray);
 
-        for (var key in this.actionList){
-            var action = this.actionList[key];
-            var actionTime = action.actionCreatedTime;
-            for (let t = 0; t < weekArray.length; t++){
-                if (actionTime < weekArray[t].time){
-                    weekArray[t].count += 1;
-                    weekArray[t].peopleJoin += Object.keys(action.joined).length;
-                    break;
+
+        //---- CREATE Y-AXIS THAT COUNT NUMBER OF ACTIONS CREATE AND PEOPLE JOIN ----
+        for (let key in this.actionList){
+            let action = this.actionList[key];
+            let actionTime = moment(action.actionCreatedTime).format('L');
+            for (let i = 0; i < timeArray.length; i++){
+                if (actionTime == timeArray[i].prettify){
+                    timeArray[i].count += 1;
+                    timeArray[i].peopleJoin += Object.keys(action.joined).length;
                 }
             }
-
         }
 
-        this.TimeAxis = [];
+        //--------- CREATE ARRAY OF PEOPLE JOIN AND ACTION CREATED -------
         this.PeopleJoin = [];
         this.ActionCreated = [];
+        let xaxis = [];
+
+        //------------- DEPEND ON USER CHOICE, SPLICE THE TIME ARRAY ------------
+        if (choice == 'week') xaxis = timeArray.slice(Math.max(timeArray.length - 7, 1));
+        else if (choice == 'month') xaxis = timeArray.slice(Math.max(timeArray.length - 30, 1));
+        else if (choice == 'year') xaxis = timeArray.slice(Math.max(timeArray.length - 365, 1));
+        else{ xaxis = timeArray; }
+        console.log(xaxis);
 
         //---------------- PRETTIFY WEEKLY ------------------
-        for (var eachpoint in weekArray){
-            var prettyTime = String(new Date(weekArray[eachpoint].time*1000)).substring(4,10);
-            this.TimeAxis.push(prettyTime);
-            this.PeopleJoin.push(weekArray[eachpoint].peopleJoin);
-            this.ActionCreated.push(weekArray[eachpoint].count);
+        for (var eachpoint in xaxis){
+            this.lineChartLabels.push(xaxis[eachpoint].prettify);
+            this.PeopleJoin.push(xaxis[eachpoint].peopleJoin);
+            this.ActionCreated.push(xaxis[eachpoint].count);
         }
-        this.lineChartLabels = this.TimeAxis;
-        this.lineChartData.push({data: this.ActionCreated, label: 'Number of Actions Created'});
-        this.lineChartData.push({data:this.PeopleJoin, label: 'Number of People Joined'});
 
+        this.lineChartData = [
+            {data: this.ActionCreated, label: 'Number of Actions Created'},
+            {data:this.PeopleJoin, label: 'Number of People Joined'}
+        ]
     }
-
 
   //--------------------------------------------------------------------------------------
   //----------------------------------- CREATE A MAP -------------------------------------
