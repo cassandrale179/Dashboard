@@ -1,0 +1,74 @@
+<ion-toolbar color = "primary">
+	<ion-searchbar autocomplete autocorrect placeholder = "Search Members" (ionInput) = "searchUsers($event)"></ion-searchbar>
+</ion-toolbar>
+
+
+<!-- _____________ SORT MEMBERS BY THE NUMBER OF ACTIONS CREATED AND JOINED _____________ -->
+<div id = "A">
+	<ion-grid>
+		<ion-row>
+			<button ion-button color = "secondary" (click) = "createSmall()"> Smallest Number of Actions Created</button>
+			<button ion-button color = "secondary" (click) = "createBig()"> Biggest Number of Actions Created</button>
+			<button ion-button color = "secondary" (click) = "joinSmall()"> Smallest Number of Actions Joined</button>
+			<button ion-button color = "secondary" (click) = "joinBig()"> Biggest Number of Actions Joined</button>
+		</ion-row>
+
+
+		<!-- _________ DISPLAY THE USER PHOTO AND EMAIL ___________ -->
+		<ion-row>
+			<ion-col>
+				<ion-card >
+					 <ion-card-header>
+						<img [src] = "contentPhoto" style = "display:inline;">  {{contentName}}
+					 </ion-card-header>
+					 <ion-card-content>
+							Date Created: {{contentJoined}}
+						<div>
+							actions created: {{actionCreated}}
+						</div>
+						<div>
+							actions joined: {{actionJoined}}
+						</div>
+						<div>
+							Email address: {{actionEmail}}
+						</div>
+						<div>
+							User feedback:
+							<ion-list *ngFor="let feed of userFeedback">
+								{{feed.description}}
+							</ion-list>
+						</div>
+					</ion-card-content>
+				</ion-card>
+
+				<!-- __________ PENDING MEMBERS REQUEST _________ -->
+				<ion-card-header>pending members request:</ion-card-header>
+				<ion-scroll style = "height : 300px" scrollY = "true">
+					<ion-list>
+						<ion-item *ngFor= "let user of pendingInfo">
+							<p><img id = "A1" [src] = "pendPhoto[user.id]" />   {{user.firstName}} {{user.lastName}}
+								<button ion-button color = "secondary" (click) = "acceptMem(user)"> Accept</button> <button ion-button color = "danger" (click) = "denyMem(user)"> Deny</button>
+							</p>
+						</ion-item>
+					</ion-list>
+				</ion-scroll>
+			</ion-col>
+
+
+			<!-- __________ DISPLAY STATUS OF USER WHEN YOU CLICK ON THEM _________ -->
+			<ion-col>
+				<h3>Members:</h3>
+					<ion-scroll style = "height : 300px" scrollY = "true">
+						<ion-list>
+							<ion-item *ngFor= "let user of userList | sortBy: [tagorcount, sortType]"  (click)="showUserStats(user)" >
+								<p><img id = "A1" [src] = "photos[user.id]" /> {{user.firstName}} {{user.lastName}} </p>
+							</ion-item>
+						</ion-list>
+
+
+
+					</ion-scroll>
+			</ion-col>
+		</ion-row>
+	</ion-grid>
+</div>
