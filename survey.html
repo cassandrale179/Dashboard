@@ -15,20 +15,49 @@
         </ion-item>
 
 
+        <!-- _____________ QUESTIONS OF SURVEY ___________ -->
 
-        <!-- _________  QUESTIONS OF SURVEY ___________ -->
+
+        <!-- ________ DISPLAY PREVIOUS QUESTIONS ________ -->
+        <div id="B" *ngFor="let q of content">
+            <h4>{{q.label}}: {{q.question}}</h4>
+            <ul *ngFor="let a of q.choice">
+                <li>
+                    {{a}}
+                </li>
+            </ul>
+        </div>
+
         <h3>Add A Question Below</h3>
+
+
+        <!-- ________ ADD A NEW QUESTIONS ________ -->
         <ion-item>
-            <ion-label stacked> Question 1</ion-label>
-            <ion-input type="text" placeholder="E.g: What's the best food to buy for next time?"></ion-input>
+            <ion-label stacked> {{label}} </ion-label>
+            <ion-input [(ngModel)]="question" type="text" placeholder="E.g: What's the best food to buy for next time?"></ion-input>
         </ion-item>
-        <button ion-button (click)="AddQuestion()"> Add Answer Choice </button>
+
+        <!-- _______________ OPTIONS AND ANSWER CHOICE ________ -->
+        <div class="answer">
+
+            <!-- ____________ DISPLAY PREVIOUS CHOICES _______ -->
+            <div *ngFor="let c of choices" class="C">
+                 <ion-icon (click)="DeleteChoice(c)" style="margin-right: 20px" name="close"></ion-icon> {{c}}
+
+            </div>
 
 
-            <ion-list>
-                
-            </ion-list>
+            <!-- _____________ INPUT FOR A NEW CHOICE __________ -->
+            <input type="checkbox" id="answer">
+            <label for="answer">
+                <ion-input [(ngModel)]="choice" type="text" placeholder="pizza"></ion-input>
+            </label>
+             <ion-icon (click)="AddChoice()" name="add"></ion-icon>
+        </div>
 
 
+        <!-- _______________ BUTTON TO ADD MORE QUESTIONS _________ -->
+        <button ion-button (click)="AddQuestion()"> Add Question </button>
+        <button ion-button (click)="SubmitSurvey()">Submit Survey</button>
     </div>
 </div>
