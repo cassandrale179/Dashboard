@@ -1,0 +1,94 @@
+
+<ion-header no-border>
+
+  <ion-navbar color="primary">
+
+    <!-- search bar -->
+    <ion-searchbar autocomplete autocorrect
+        placeholder="Search Messages"
+        (ionInput)="searchMessages($event)">
+    </ion-searchbar>
+
+    <!-- create new message button -->
+    <ion-buttons end>
+      <button ion-button icon-only (click)="newDMMessage()">
+        <ion-icon name="ios-create-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+
+</ion-header>
+<ion-content>
+
+  <!-- refresher -->
+	<ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="arrow-dropdown"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <p>{{fmessage}}</p>
+
+  <ion-list>
+      <div *ngFor="let chat of allChatsPrettify">
+          <button ion-item (click)="enterAllChat(chat)">
+              <ion-avatar item-start>
+                  <img src="{{chat.photoID}}" />
+              </ion-avatar>
+
+              <!-- ____ CHECK IF CHAT IS READ ____ -->
+              <div *ngIf="chat.unread">
+                  <h2><b>{{chat.chatName}}</b></h2>
+              </div>
+              <div *ngIf="!(chat.unread)">
+                  <h2>{{chat.chatName}}</h2>
+              </div>
+              <p>{{chat.sender}} : {{chat.lastText}}</p>
+          </button>
+      </div>
+
+
+
+
+    <!-- <div *ngFor="let chat of DMChats">
+      <button ion-item (click)="enterChat(chat)">
+        <ion-avatar item-start>
+          <img src="{{photos[chat.userID]}}"  onError="this.src='assets/imgs/spinner.gif'">
+        </ion-avatar>
+
+        <div *ngIf="chat.unread">
+          <h2 *ngIf="!(chat.chatName)"><b>{{chat.firstname}} {{chat.lastname}}</b></h2>
+          <h2 *ngIf="chat.chatName"><b>{{chat.chatName}}</b></h2>
+        </div>
+
+        <div *ngIf="!(chat.unread)">
+          <h2 *ngIf="!(chat.chatName)">{{chat.firstname}} {{chat.lastname}}</h2>
+          <h2 *ngIf="chat.chatName">{{chat.chatName}}</h2>
+        </div>
+
+
+        <p *ngIf="!(chat.lastText)">Nothing in this chat yet.</p>
+        <div *ngIf="chat.lastText">
+          <p *ngIf="chat.unread"><b>{{chat.sender}}: {{chat.lastText}}</b></p>
+          <p *ngIf="!(chat.unread)">{{chat.sender}}: {{chat.lastText}}</p>
+        </div>
+      </button>
+		</div> -->
+
+    <!-- <div *ngFor="let gchat of groupChats">
+      <button ion-item (click)="enterGroupChat(gchat)">
+			<ion-avatar item-start>
+	    	<img src="{{groupPhotos[gchat.ownerID]}}" onError="this.src='assets/imgs/spinner.gif'">
+        <div class="group-message-avatar">G</div>
+	    </ion-avatar>
+	    <h2>{{gchat.chatName}}</h2>
+	    <p *ngIf="!(gchat.lastText.messageText)">Nothing in this chat yet.</p>
+      <p *ngIf="gchat.lastText.messageText && isUserSentLastMessage(gchat.lastText.userID, gchat.lastText.firstname)">
+        {{groupChatSenderName}}: {{gchat.lastText.messageText}}
+      </p>
+      </button>
+    </div> -->
+  </ion-list>
+</ion-content>
